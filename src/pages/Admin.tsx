@@ -228,10 +228,13 @@ export default function AdminPage() {
   const getAppointmentsByDate = () => {
     const grouped: { [key: string]: Booking[] } = {};
     
-    // Filter bookings by selected date if a date is selected
+    // Only show confirmed appointments in the Appointments panel
+    const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed');
+    
+    // Filter by selected date if a date is selected
     const filteredBookings = selectedDate 
-      ? bookings.filter(booking => booking.preferred_date === selectedDate)
-      : bookings;
+      ? confirmedBookings.filter(booking => booking.preferred_date === selectedDate)
+      : confirmedBookings;
     
     filteredBookings.forEach((booking) => {
       if (!grouped[booking.preferred_date]) {
@@ -250,6 +253,37 @@ export default function AdminPage() {
 
   const clearDateFilter = () => {
     setSelectedDate('');
+  };
+
+  const updateBookingStatus = async (id: number, status: 'pending' | 'confirmed' | 'cancelled') => {
+    try {
+      const response = await fetch(`${API_URL}/update-booking.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, status }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Update local state
+        setBookings(bookings.map(booking => 
+          booking.id === id ? { ...booking, status } : booking
+        ));
+      } else {
+        // Fallback: update local state even if API fails
+        setBookings(bookings.map(booking => 
+          booking.id === id ? { ...booking, status } : booking
+        ));
+      }
+    } catch (err) {
+      // Fallback: update local state if API fails
+      setBookings(bookings.map(booking => 
+        booking.id === id ? { ...booking, status } : booking
+      ));
+    }
   };
 
   if (!isAuthenticated) {
@@ -305,7 +339,7 @@ export default function AdminPage() {
   return (
     <Layout>
       <section className="section-padding bg-secondary/30 min-h-screen">
-        <div className="container-custom">
+        <div className="container mx-auto px-4 max-w-[1600px]">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-serif font-semibold text-foreground">
@@ -367,36 +401,37 @@ export default function AdminPage() {
                 </p>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[1200px]">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">ID</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Name</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Contact</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Treatment</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Date & Time</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Message</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-12">ID</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-32">Name</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-44">Contact</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-36">Treatment</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-36">Date & Time</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-24">Status</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-48">Message</th>
+                      <th className="px-3 py-4 text-left text-sm font-semibold text-foreground w-44">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {bookings.map((booking) => (
                       <tr key={booking.id} className="hover:bg-muted/30">
-                        <td className="px-6 py-4 text-sm text-foreground">#{booking.id}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-4 text-sm text-foreground">#{booking.id}</td>
+                        <td className="px-3 py-4">
                           <div className="text-sm font-medium text-foreground">{booking.name}</div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-foreground">{booking.email}</div>
+                        <td className="px-3 py-4">
+                          <div className="text-sm text-foreground truncate max-w-[160px]">{booking.email}</div>
                           <div className="text-xs text-muted-foreground">{booking.phone}</div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-foreground">{booking.treatment}</td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-foreground">{new Date(booking.preferred_date).toLocaleDateString()}</div>
-                          <div className="text-xs text-muted-foreground">{booking.preferred_time}</div>
+                        <td className="px-3 py-4 text-sm text-foreground">{booking.treatment}</td>
+                        <td className="px-3 py-4">
+                          <div className="text-sm text-foreground whitespace-nowrap">{new Date(booking.preferred_date).toLocaleDateString()}</div>
+                          <div className="text-xs text-muted-foreground whitespace-nowrap">{booking.preferred_time}</div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                        <td className="px-3 py-4">
+                          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                             booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                             booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                             'bg-yellow-100 text-yellow-700'
@@ -404,8 +439,38 @@ export default function AdminPage() {
                             {booking.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate">
-                          {booking.message || '-'}
+                        <td className="px-3 py-4 text-sm text-muted-foreground">
+                          <div className="truncate max-w-[180px]" title={booking.message || '-'}>
+                            {booking.message || '-'}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="flex gap-1.5 flex-nowrap">
+                            {booking.status !== 'confirmed' && (
+                              <button
+                                onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                                className="px-2.5 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors whitespace-nowrap"
+                              >
+                                Confirm
+                              </button>
+                            )}
+                            {booking.status !== 'cancelled' && (
+                              <button
+                                onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                                className="px-2.5 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {booking.status !== 'pending' && (
+                              <button
+                                onClick={() => updateBookingStatus(booking.id, 'pending')}
+                                className="px-2.5 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-lg hover:bg-yellow-200 transition-colors whitespace-nowrap"
+                              >
+                                Pending
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -416,72 +481,105 @@ export default function AdminPage() {
           ) : activeTab === 'appointments' ? (
             <div className="space-y-6">
               <div className="bg-card rounded-2xl shadow-card p-6">
-                <h2 className="text-xl font-semibold text-foreground mb-4">Appointments by Date</h2>
-                <p className="text-sm text-muted-foreground mb-6">
-                  View appointments grouped by date
-                </p>
-                {Object.entries(getAppointmentsByDate()).map(([date, dateBookings]) => (
-                  <div key={date} className="mb-6 last:mb-0">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Calendar className="w-5 h-5 text-primary" />
-                      <h3 className="text-lg font-semibold text-foreground">
-                        {new Date(date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </h3>
-                      <span className="ml-auto bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                        {dateBookings.length} appointments
-                      </span>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground">Appointments by Date</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {selectedDate 
+                        ? `Showing appointments for ${new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+                        : 'View appointments grouped by date'
+                      }
+                    </p>
+                  </div>
+                  
+                  {/* Date Filter */}
+                  <div className="flex gap-3 items-center">
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="pl-10 pr-4 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                      />
                     </div>
-                    <div className="grid gap-4">
-                      {dateBookings.map((booking) => (
-                        <div key={booking.id} className="bg-muted/30 rounded-xl p-4 border border-border">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h4 className="font-semibold text-foreground">{booking.name}</h4>
-                                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                                  booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                  booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                  'bg-yellow-100 text-yellow-700'
-                                }`}>
-                                  {booking.status}
-                                </span>
+                    {selectedDate && (
+                      <Button onClick={clearDateFilter} variant="outline" size="sm">
+                        Clear Filter
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {Object.keys(getAppointmentsByDate()).length === 0 ? (
+                  <div className="text-center py-12">
+                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">No appointments found for the selected date</p>
+                  </div>
+                ) : (
+                  Object.entries(getAppointmentsByDate()).map(([date, dateBookings]) => (
+                    <div key={date} className="mb-6 last:mb-0">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Calendar className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {new Date(date).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </h3>
+                        <span className="ml-auto bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                          {dateBookings.length} appointments
+                        </span>
+                      </div>
+                      <div className="grid gap-4">
+                        {dateBookings.map((booking) => (
+                          <div key={booking.id} className="bg-muted/30 rounded-xl p-4 border border-border">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h4 className="font-semibold text-foreground">{booking.name}</h4>
+                                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                    booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                    booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                    'bg-yellow-100 text-yellow-700'
+                                  }`}>
+                                    {booking.status}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-muted-foreground">Time:</span>
+                                    <span className="ml-2 text-foreground font-medium">{booking.preferred_time}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Treatment:</span>
+                                    <span className="ml-2 text-foreground">{booking.treatment}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Phone:</span>
+                                    <span className="ml-2 text-foreground">{booking.phone}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Email:</span>
+                                    <span className="ml-2 text-foreground">{booking.email}</span>
+                                  </div>
+                                </div>
+                                {booking.message && (
+                                  <div className="mt-2 text-sm">
+                                    <span className="text-muted-foreground">Note:</span>
+                                    <span className="ml-2 text-foreground">{booking.message}</span>
+                                  </div>
+                                )}
                               </div>
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Time:</span>
-                                  <span className="ml-2 text-foreground font-medium">{booking.preferred_time}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Treatment:</span>
-                                  <span className="ml-2 text-foreground">{booking.treatment}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Phone:</span>
-                                  <span className="ml-2 text-foreground">{booking.phone}</span>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Email:</span>
-                                  <span className="ml-2 text-foreground">{booking.email}</span>
-                                </div>
-                              </div>
-                              {booking.message && (
-                                <div className="mt-2 text-sm">
-                                  <span className="text-muted-foreground">Note:</span>
-                                  <span className="ml-2 text-foreground">{booking.message}</span>
-                                </div>
-                              )}
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           ) : (

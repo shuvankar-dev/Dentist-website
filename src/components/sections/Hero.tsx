@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star, Shield, Clock } from 'lucide-react';
+import heroImage from '@/assets/hero.png';
 
 export function Hero() {
   return (
@@ -81,7 +82,7 @@ export function Hero() {
           <div className="relative hidden lg:block">
             <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-large">
               <img
-                src="https://plus.unsplash.com/premium_photo-1661411036526-ef919da26981?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                src={heroImage}
                 alt="Modern dental practice"
                 className="w-full h-full object-cover"
               />
