@@ -35,12 +35,15 @@ const treatments = [
 ];
 
 const timeSlots = [
-  '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-  '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM', '5:00 PM',
+  { label: '10:00 AM - 12:00 PM', value: '10:00 AM - 12:00 PM' },
+  { label: '12:00 PM - 2:00 PM', value: '12:00 PM - 2:00 PM' },
+  { label: '6:00 PM - 8:00 PM', value: '6:00 PM - 8:00 PM' },
+  { label: '8:00 PM - 10:00 PM', value: '8:00 PM - 10:00 PM' },
 ];
 
 export default function Booking() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<string>('');
   
   const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -196,20 +199,27 @@ export default function Booking() {
                         <p className="text-sm text-destructive">{errors.preferredDate.message}</p>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="preferredTime">Preferred Time *</Label>
-                      <Select onValueChange={(value) => setValue('preferredTime', value)}>
-                        <SelectTrigger className={errors.preferredTime ? 'border-destructive' : ''}>
-                          <SelectValue placeholder="Select a time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {timeSlots.map((time) => (
-                            <SelectItem key={time} value={time}>
-                              {time}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Preferred Time Slot *</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {timeSlots.map((slot) => (
+                          <button
+                            key={slot.value}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTime(slot.value);
+                              setValue('preferredTime', slot.value);
+                            }}
+                            className={`p-4 rounded-xl border-2 text-center font-medium transition-all ${
+                              selectedTime === slot.value
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border hover:border-primary/50 text-foreground'
+                            }`}
+                          >
+                            {slot.label}
+                          </button>
+                        ))}
+                      </div>
                       {errors.preferredTime && (
                         <p className="text-sm text-destructive">{errors.preferredTime.message}</p>
                       )}

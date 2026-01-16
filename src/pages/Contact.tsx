@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout/Layout';
 import { toast } from '@/hooks/use-toast';
+import contactHeroImage from '@/assets/contactHero.png';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
@@ -66,8 +67,18 @@ export default function ContactPage() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-secondary to-background">
-        <div className="container-custom">
+      <section className="relative section-padding bg-gradient-to-b from-secondary to-background overflow-hidden min-h-[400px]">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={contactHeroImage}
+            alt="Dental clinic background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/70" />
+        </div>
+
+        <div className="container-custom relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <span className="text-primary font-medium text-sm tracking-wide uppercase mb-4 block">
               Contact Us

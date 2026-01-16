@@ -1,48 +1,41 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, Smile, Shield, Stethoscope, SunMedium, HeartPulse } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const treatments = [
   {
-    icon: Stethoscope,
     title: 'General Dentistry',
-    description: 'Comprehensive check-ups, fillings, and preventive care to maintain your oral health.',
+    image: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800&auto=format&fit=crop',
     href: '/treatments/general',
-    color: 'bg-blue-50 text-blue-600',
   },
   {
-    icon: Smile,
-    title: 'Invisalign',
-    description: 'Discreet, comfortable clear aligners to straighten your teeth without traditional braces.',
-    href: '/treatments/invisalign',
-    color: 'bg-emerald-50 text-emerald-600',
+    title: 'Orthodontics',
+    image: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?q=80&w=800&auto=format&fit=crop',
+    href: '/treatments/orthodontics',
   },
   {
-    icon: Shield,
-    title: 'Dental Implants',
-    description: 'Permanent, natural-looking replacements for missing teeth that restore your smile.',
-    href: '/treatments/implants',
-    color: 'bg-violet-50 text-violet-600',
-  },
-  {
-    icon: SunMedium,
-    title: 'Teeth Whitening',
-    description: 'Professional whitening treatments for a brighter, more radiant smile.',
-    href: '/treatments/whitening',
-    color: 'bg-amber-50 text-amber-600',
-  },
-  {
-    icon: HeartPulse,
     title: 'Oral Hygiene',
-    description: 'Expert cleaning and hygiene advice to keep your teeth and gums healthy.',
+    image: 'https://plus.unsplash.com/premium_photo-1661768571778-52173afa5a74?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     href: '/treatments/hygiene',
-    color: 'bg-rose-50 text-rose-600',
   },
   {
-    icon: Sparkles,
-    title: 'Cosmetic Dentistry',
-    description: 'Veneers, bonding, and smile makeovers to enhance your natural beauty.',
-    href: '/treatments/cosmetic',
-    color: 'bg-teal-50 text-teal-600',
+    title: 'Root Canal',
+    image: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?q=80&w=800&auto=format&fit=crop',
+    href: '/treatments/root-canal',
+  },
+  {
+    title: 'Teeth Whitening',
+    image: 'https://plus.unsplash.com/premium_photo-1664475354661-4328fbb428ed?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    href: '/treatments/whitening',
+  },
+  {
+    title: 'Digital Dentistry',
+    image: 'https://images.unsplash.com/photo-1600170311833-c2cf5280ce49?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    href: '/treatments/digital',
+  },
+  {
+    title: 'Dental Implants',
+    image: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?q=80&w=800&auto=format&fit=crop',
+    href: '/treatments/implants',
   },
 ];
 
@@ -64,31 +57,35 @@ export function Treatments() {
           </p>
         </div>
 
-        {/* Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Image Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
           {treatments.map((treatment, index) => (
             <Link
               key={treatment.title}
               to={treatment.href}
-              className="group bg-card rounded-2xl p-8 card-hover border border-transparent hover:border-primary/20"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className={`group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ${
+                index === 1 ? 'lg:row-span-2' : 'aspect-[4/3]'
+              }`}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className={`w-14 h-14 rounded-xl ${treatment.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                <treatment.icon className="w-7 h-7" />
+              {/* Image */}
+              <img
+                src={treatment.image}
+                alt={treatment.title}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              
+              {/* Title Badge */}
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-primary/95 backdrop-blur-sm text-white px-4 py-2 rounded-lg shadow-lg">
+                  <h3 className="font-semibold text-sm text-center">
+                    {treatment.title}
+                  </h3>
+                </div>
               </div>
-              
-              <h3 className="font-serif text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
-                {treatment.title}
-              </h3>
-              
-              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                {treatment.description}
-              </p>
-              
-              <span className="inline-flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all">
-                Learn more
-                <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </span>
             </Link>
           ))}
         </div>

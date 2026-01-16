@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CTA } from '@/components/sections/CTA';
 import { Check } from 'lucide-react';
+import feesHeroImage from '@/assets/feesHero.png';
 
 const plans = [
   {
     name: 'Essential Care',
-    price: '15.50',
+    price: '1,299',
     period: '/month',
     description: 'Perfect for maintaining good oral health with regular check-ups.',
     features: [
@@ -21,7 +22,7 @@ const plans = [
   },
   {
     name: 'Complete Care',
-    price: '25.00',
+    price: '2,099',
     period: '/month',
     description: 'Comprehensive coverage for the whole family with added benefits.',
     features: [
@@ -36,7 +37,7 @@ const plans = [
   },
   {
     name: 'Premium Care',
-    price: '45.00',
+    price: '3,799',
     period: '/month',
     description: 'Full protection including cosmetic treatments and specialist care.',
     features: [
@@ -52,24 +53,34 @@ const plans = [
 ];
 
 const treatments = [
-  { name: 'New patient examination', price: '75' },
-  { name: 'Routine examination', price: '55' },
-  { name: 'Hygiene appointment', price: '85' },
-  { name: 'White filling (per surface)', price: 'From £95' },
-  { name: 'Root canal treatment', price: 'From £350' },
-  { name: 'Tooth extraction', price: 'From £120' },
-  { name: 'Teeth whitening', price: 'From £350' },
-  { name: 'Porcelain veneer', price: 'From £750' },
-  { name: 'Dental implant', price: 'From £2,500' },
-  { name: 'Invisalign treatment', price: 'From £3,500' },
+  { name: 'New patient examination', price: '6,299' },
+  { name: 'Routine examination', price: '4,599' },
+  { name: 'Hygiene appointment', price: '7,099' },
+  { name: 'White filling (per surface)', price: 'From ₹7,999' },
+  { name: 'Root canal treatment', price: 'From ₹29,299' },
+  { name: 'Tooth extraction', price: 'From ₹10,099' },
+  { name: 'Teeth whitening', price: 'From ₹29,299' },
+  { name: 'Porcelain veneer', price: 'From ₹62,799' },
+  { name: 'Dental implant', price: 'From ₹2,09,299' },
+  { name: 'Invisalign treatment', price: 'From ₹2,92,799' },
 ];
 
 export default function FeesPage() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-secondary to-background">
-        <div className="container-custom">
+      <section className="relative section-padding bg-gradient-to-b from-secondary to-background overflow-hidden min-h-[400px]">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={feesHeroImage}
+            alt="Dental fees background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/70" />
+        </div>
+
+        <div className="container-custom relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <span className="text-primary font-medium text-sm tracking-wide uppercase mb-4 block">
               Fees & Plans
@@ -113,7 +124,7 @@ export default function FeesPage() {
                   {plan.name}
                 </h3>
                 <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-4xl font-bold text-foreground">£{plan.price}</span>
+                  <span className="text-4xl font-bold text-foreground">₹{plan.price}</span>
                   <span className="text-muted-foreground">{plan.period}</span>
                 </div>
                 <p className="text-muted-foreground text-sm mb-6">
@@ -158,7 +169,7 @@ export default function FeesPage() {
                   >
                     <span className="text-foreground">{treatment.name}</span>
                     <span className="font-semibold text-foreground">
-                      {treatment.price.startsWith('From') ? treatment.price : `£${treatment.price}`}
+                      {treatment.price.startsWith('From') ? treatment.price : `₹${treatment.price}`}
                     </span>
                   </div>
                 ))}

@@ -67,8 +67,18 @@ export default function BlogPage() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-secondary to-background">
-        <div className="container-custom">
+      <section className="relative section-padding bg-gradient-to-b from-secondary to-background overflow-hidden min-h-[400px]">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://www.shutterstock.com/image-photo/little-boy-sitting-on-dental-260nw-2133599997.jpg"
+            alt="Dental care background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/70" />
+        </div>
+
+        <div className="container-custom relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <span className="text-primary font-medium text-sm tracking-wide uppercase mb-4 block">
               Our Blog
