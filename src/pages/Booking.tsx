@@ -50,13 +50,33 @@ export default function Booking() {
   });
 
   const onSubmit = async (data: BookingFormData) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log('Booking submitted:', data);
-    setIsSubmitted(true);
-    toast.success("Booking Request Submitted!", {
-      description: "We'll contact you shortly to confirm your appointment.",
-    });
+    try {
+      const response = await fetch('http://localhost/dental-care/api/bookings.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setIsSubmitted(true);
+        toast.success("Booking Request Submitted!", {
+          description: "We'll contact you shortly to confirm your appointment.",
+        });
+      } else {
+        toast.error("Booking Failed", {
+          description: result.error || "Please try again later.",
+        });
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast.error("Booking Failed", {
+        description: "Unable to connect to server. Please try again later.",
+      });
+    }
   };
 
   if (isSubmitted) {
