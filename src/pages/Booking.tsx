@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,6 +12,7 @@ import { Layout } from '@/components/layout/Layout';
 import { toast } from '@/hooks/use-toast';
 
 const bookingSchema = z.object({
+  doctor_id: z.string().min(1, 'Please select a doctor'),
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().email('Please enter a valid email address').max(255),
   phone: z.string().min(10, 'Please enter a valid phone number').max(20),
@@ -22,6 +23,14 @@ const bookingSchema = z.object({
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
+
+interface Doctor {
+  id: number;
+  full_name: string;
+  specialization: string;
+  profile_image?: string;
+  is_available: boolean;
+}
 
 const treatments = [
   'General Check-up',
@@ -44,10 +53,26 @@ const timeSlots = [
 export default function Booking() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string>('');
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [selectedDoctor, setSelectedDoctor] = useState<string>('');
   
   const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
   });
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+
+  const fetchDoctors = async () => {
+    try {
+      const response = await fetch('http://localhost/dental-care/api/doctors.php');
+      const data = await response.json();
+      setDoctors(data.filter((doc: Doctor) => doc.is_available));
+    } catch (error) {
+      console.error('Failed to fetch doctors:', error);
+    }
+  };
 
   const onSubmit = async (data: BookingFormData) => {
     try {
@@ -127,6 +152,48 @@ export default function Booking() {
             {/* Form */}
             <div className="bg-card rounded-3xl shadow-card p-8 md:p-12">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                {/* Doctor Selection */}
+                <div>
+                  <h3 className="font-serif text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    Select Your Doctor
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {doctors.map((doctor) => (
+                      <button
+                        key={doctor.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDoctor(doctor.id.toString());
+                          setValue('doctor_id', doctor.id.toString());
+                        }}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          selectedDoctor === doctor.id.toString()
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {doctor.profile_image && (
+                            <img 
+                              src={doctor.profile_image} 
+                              alt={doctor.full_name}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          )}
+                          <div>
+                            <h4 className="font-semibold text-foreground">{doctor.full_name}</h4>
+                            <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  {errors.doctor_id && (
+                    <p className="text-sm text-destructive mt-2">{errors.doctor_id.message}</p>
+                  )}
+                </div>
+
                 {/* Personal Information */}
                 <div>
                   <h3 className="font-serif text-xl font-semibold text-foreground mb-6 flex items-center gap-2">

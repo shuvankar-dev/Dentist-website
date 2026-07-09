@@ -3,23 +3,54 @@ require_once 'config.php';
 
 $conn = getDBConnection();
 
-// Handle GET request - Fetch all bookings
+// Handle GET request - Fetch all bookings or doctor-specific bookings
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $query = "SELECT * FROM bookings ORDER BY created_at DESC";
-    $result = $conn->query($query);
+    $doctorId = $_GET['doctor_id'] ?? null;
     
-    $bookings = [];
-    while ($row = $result->fetch_assoc()) {
-        $bookings[] = $row;
+    if ($doctorId) {
+        // Fetch bookings for a specific doctor
+        $stmt = $conn->prepare("
+            SELECT b.*, d.full_name as doctor_name 
+            FROM bookings b 
+            LEFT JOIN doctors d ON b.doctor_id = d.id 
+            WHERE b.doctor_id = ? 
+            ORDER BY b.created_at DESC
+        ");
+        $stmt->bind_param("i", $doctorId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $bookings = [];
+        while ($row = $result->fetch_assoc()) {
+            $bookings[] = $row;
+        }
+        
+        echo json_encode($bookings);
+        $stmt->close();
+    } else {
+        // Fetch all bookings with doctor details
+        $query = "
+            SELECT b.*, d.full_name as doctor_name, d.specialization 
+            FROM bookings b 
+            LEFT JOIN doctors d ON b.doctor_id = d.id 
+            ORDER BY b.created_at DESC
+        ";
+        $result = $conn->query($query);
+        
+        $bookings = [];
+        while ($row = $result->fetch_assoc()) {
+            $bookings[] = $row;
+        }
+        
+        echo json_encode($bookings);
     }
-    
-    echo json_encode($bookings);
 }
 
 // Handle POST request - Create new booking
 elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     
+    $doctor_id = $data['doctor_id'] ?? null;
     $name = $data['name'] ?? '';
     $email = $data['email'] ?? '';
     $phone = $data['phone'] ?? '';
@@ -29,15 +60,15 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $message = $data['message'] ?? '';
     
     // Validate required fields
-    if (empty($name) || empty($email) || empty($phone) || empty($treatment) || empty($preferred_date) || empty($preferred_time)) {
+    if (empty($doctor_id) || empty($name) || empty($email) || empty($phone) || empty($treatment) || empty($preferred_date) || empty($preferred_time)) {
         http_response_code(400);
         echo json_encode(['error' => 'All required fields must be filled']);
         exit();
     }
     
     // Insert booking
-    $stmt = $conn->prepare("INSERT INTO bookings (name, email, phone, treatment, preferred_date, preferred_time, message) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssss", $name, $email, $phone, $treatment, $preferred_date, $preferred_time, $message);
+    $stmt = $conn->prepare("INSERT INTO bookings (doctor_id, name, email, phone, treatment, preferred_date, preferred_time, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isssssss", $doctor_id, $name, $email, $phone, $treatment, $preferred_date, $preferred_time, $message);
     
     if ($stmt->execute()) {
         echo json_encode([
